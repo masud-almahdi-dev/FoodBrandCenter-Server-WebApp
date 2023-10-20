@@ -31,27 +31,64 @@ async function run() {
     const brandscollection = client.db('brandsDB').collection('brands');
     const products = client.db('brandsDB').collection('products');
 
-    app.get("/brand/:id",async(req,res)=>{
-      
-      const cursor = brandscollection.find( new ObjectId(req.params.id))
-      let result = await cursor.toArray();
-      const cursor2 = products.find({brand_id: req.params.id});
-      if(result.length){result[0].products = await cursor2.toArray();}
-      res.send(result)
+    app.get("/brand/:id", async (req, res) => {
+      try {
+        let id = new ObjectId(req.params.id)
+        const cursor = brandscollection.find(id)
+        let result = await cursor.toArray();
+        const cursor2 = products.find({ brand_id: req.params.id });
+        if (result.length) { result[0].products = await cursor2.toArray(); }
+        res.send(result)
+      } catch (e) {
+        res.send(e)
+      }
     })
-    
-    app.get("/brands",async(req,res)=>{
+    app.get("/product/:id", async (req, res) => {
+
+      try {
+        let id = new ObjectId(req.params.id)
+        const cursor = products.find(id)
+        let result = await cursor.toArray();
+        res.send(result)
+      } catch (e) {
+        res.send(e)
+      }
+    })
+    app.put("/updateproduct/:id", async (req, res) => {
+
+      try {
+        let id = new ObjectId(req.params.id)
+        const filter = {_id: id}
+        const options = {upsert: true}
+        const updatedproduct = {
+          $set : {
+            title: req.body.title,
+            brand_id: req.body.brand_id,
+            image: req.body.image,
+            price: req.body.price,
+            details: req.body.details,
+            rating: req.body.rating
+          }
+        }
+        const result = await products.updateOne(filter,updatedproduct,options)
+        res.send(result)
+      } catch (e) {
+        res.send(e)
+      }
+    })
+
+    app.get("/brands", async (req, res) => {
       const cursor = brandscollection.find();
       const result = await cursor.toArray();
       res.send(result)
     })
 
-    app.post("/addproduct",async(req,res)=>{
+    app.post("/addproduct", async (req, res) => {
       const result = await products.insertOne(req.body)
       res.send(result)
     })
 
-    
+
   } finally {
     // Ensures that the client will close when you finish/error
     //await client.close();
