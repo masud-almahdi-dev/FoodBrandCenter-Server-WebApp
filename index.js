@@ -95,6 +95,11 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result)
     })
+    app.get("/products", async (req, res) => {
+      const cursor = products.find();
+      const result = await cursor.toArray();
+      res.send(result)
+    })
 
     app.post("/addproduct", async (req, res) => {
       const result = await products.insertOne(req.body)
