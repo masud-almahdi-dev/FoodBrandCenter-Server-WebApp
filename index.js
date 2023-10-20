@@ -8,7 +8,7 @@ app.use(express.json());
 
 
 require('dotenv').config()
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@${process.env.DB_CLUSTER}`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -29,6 +29,16 @@ async function run() {
     // console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
     const brandscollection = client.db('brandsDB').collection('brands');
+    const products = client.db('brandsDB').collection('products');
+
+    app.get("/brand/:id",async(req,res)=>{
+      
+      const cursor = brandscollection.find( new ObjectId(req.params.id))
+      let result = await cursor.toArray();
+      const cursor2 = products.find({brand_id: req.params.id});
+      if(result.length){result[0].products = await cursor2.toArray();}
+      res.send(result)
+    })
     
     app.get("/brands",async(req,res)=>{
       const cursor = brandscollection.find();
@@ -36,6 +46,10 @@ async function run() {
       res.send(result)
     })
 
+    app.post("/addproduct",async(req,res)=>{
+      const result = await products.insertOne(req.body)
+      res.send(result)
+    })
 
     
   } finally {
