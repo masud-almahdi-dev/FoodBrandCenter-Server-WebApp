@@ -65,12 +65,25 @@ async function run() {
             title: req.body.title,
             brand_id: req.body.brand_id,
             image: req.body.image,
+            type: req.body.type,
             price: req.body.price,
             details: req.body.details,
             rating: req.body.rating
           }
         }
         const result = await products.updateOne(filter,updatedproduct,options)
+        res.send(result)
+      } catch (e) {
+        res.send(e)
+      }
+    })
+
+    app.delete("/delete/:id", async (req, res) => {
+
+      try {
+        let id = new ObjectId(req.params.id)
+        const filter = {_id: id}
+        const result = await products.deleteOne(filter)
         res.send(result)
       } catch (e) {
         res.send(e)
